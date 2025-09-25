@@ -1,0 +1,101 @@
+:root {
+  --bg: #1e1e1e;
+  --text: #ffffff;
+  --muted: #d1d5db;
+  --accent: #c6f646; /* ajusta al hex exacto del figma si difiere */
+}
+
+.screen {
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+  padding: 24px 16px;
+}
+
+.header {
+  margin-bottom: 24px;
+}
+.logo {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+
+.hero {
+  display: grid;
+  gap: 20px;
+  align-content: start;
+}
+
+/* PNG 222x222 en mobile */
+.arrow {
+  width: 222px;
+  height: auto; /* respeta proporción del PNG */
+  display: block;
+}
+
+/* Título como en la captura: dos líneas con acento verde */
+.title {
+  font-family: "Montserrat", system-ui, -apple-system, "Segoe UI", Roboto, Arial,
+    sans-serif;
+  font-size: 24px;
+  font-weight: 800;
+  line-height: 1.2;
+  margin: 0;
+  max-width: 20ch;
+}
+.accent {
+  color: var(--accent);
+}
+
+.subtitle {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.5;
+  max-width: 28ch;
+}
+
+.linkBtn {
+  margin-top: 8px;
+  background: none;
+  border: none;
+  color: var(--text);
+  font-weight: 600;
+  font-size: 15px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+.linkBtn:hover {
+  text-decoration: underline;
+}
+
+/* Escala suave en pantallas más anchas */
+@media (min-width: 480px) {
+  .screen {
+    padding-left: 32px;
+    padding-right: 32px;
+  }
+  .arrow {
+    width: 260px;
+  }
+  .title {
+    font-size: 28px;
+  }
+}
+@media (min-width: 768px) {
+  .screen {
+    padding-left: 5vw;
+    padding-right: 5vw;
+  }
+  .arrow {
+    width: 320px;
+  }
+  .title {
+    font-size: 32px;
+  }
+}
