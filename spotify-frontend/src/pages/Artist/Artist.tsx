@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import styles from "./Artist.module.css";
 import { Spotify } from "../../api/spotify";
+import { logout } from "../../auth/auth";
 
 type Image = { url: string; width?: number; height?: number };
 type Artist = {
@@ -144,9 +145,9 @@ export default function ArtistPage() {
             Mis álbumes
           </Link>
           <span className={styles.sep} />
-          <Link className={styles.link} to="/login">
+          <button className={styles.linkBtn} onClick={logout}>
             Cerrar sesión
-          </Link>
+          </button>
         </nav>
       </header>
 
