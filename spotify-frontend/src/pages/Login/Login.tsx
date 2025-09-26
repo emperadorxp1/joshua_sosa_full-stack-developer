@@ -1,4 +1,3 @@
-// src/pages/Login/Login.tsx
 import { useEffect } from "react";
 import { handleCallback, startLogin, getToken } from "../../auth/auth";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -28,31 +27,38 @@ export default function Login() {
   return (
     <main className={styles.screen}>
       <header className={styles.header}>
-        <h1 className={styles.logo}>JoshMusicApp</h1>
+        <h1 className={styles.logo}>JOSHMUSICAPP</h1>
       </header>
 
       <section className={styles.hero}>
-        {/* imagen decorativa → alt="" y aria-hidden */}
-        <img
-          src={arrowPng}
-          alt=""
-          aria-hidden="true"
-          className={styles.arrow}
-          width={222}
-          height={222}
-          loading="eager"
-        />
+        <div className={styles.heroInner}>
+          <img
+            src={arrowPng}
+            alt=""
+            aria-hidden="true"
+            className={styles.arrow}
+            width={222}
+            height={222}
+            loading="eager"
+          />
 
-        <h2 className={styles.title}>
-          Disfruta de la <span className={styles.accent}>mejor música</span>
-        </h2>
-        <p className={styles.subtitle}>
-          Accede a tu cuenta para guardar tus álbumes favoritos.
-        </p>
+          <div className={styles.copy}>
+            <h2 className={styles.title}>
+              <span className={styles.line}>Disfruta de la</span>
+              <span className={`${styles.line} ${styles.accent}`}>
+                mejor música
+              </span>
+            </h2>
 
-        <button className={styles.linkBtn} onClick={startLogin}>
-          Log in con Spotify <span aria-hidden="true">→</span>
-        </button>
+            <p className={styles.subtitle}>
+              Accede a tu cuenta para guardar tus álbumes favoritos.
+            </p>
+
+            <button className={styles.linkBtn} onClick={startLogin}>
+              Log in con Spotify <span aria-hidden="true">→</span>
+            </button>
+          </div>
+        </div>
       </section>
     </main>
   );

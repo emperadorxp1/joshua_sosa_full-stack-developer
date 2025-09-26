@@ -11,7 +11,6 @@ export default function Search() {
     (async () => {
       setStatus("loading");
       try {
-        // búsqueda de prueba; luego lo cambias por tu SearchBar
         const data = await Spotify.searchArtists("muse");
         setArtists(data.artists?.items ?? []);
         setStatus("done");
