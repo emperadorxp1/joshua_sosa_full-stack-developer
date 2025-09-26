@@ -10,10 +10,24 @@ const VERIFIER_KEY = "sp_pkce_verifier";
 
 export const getToken = () => localStorage.getItem(AUTH_KEY);
 export const setToken = (t: string) => localStorage.setItem(AUTH_KEY, t);
-export const clearAuth = () => {
-  localStorage.removeItem(AUTH_KEY);
-  localStorage.removeItem(VERIFIER_KEY);
-};
+export function clearAuth() {
+  try {
+    localStorage.removeItem("sp_access_token");
+    localStorage.removeItem("sp_refresh_token");
+    localStorage.removeItem("sp_expires_at");
+    localStorage.removeItem("sp_pkce_verifier");
+    localStorage.removeItem("sp_token_scope");
+  } catch {}
+}
+export function logout() {
+  clearAuth();
+  if (window.location.search) {
+    const url = new URL(window.location.href);
+    url.search = "";
+    window.history.replaceState({}, "", url.toString());
+  }
+  window.location.replace("/login");
+}
 
 export async function startLogin() {
   const { verifier, challenge } = await createPkcePair();

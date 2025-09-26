@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import styles from "./Search.module.css";
 import { Spotify } from "../../api/spotify";
+import { logout } from "../../auth/auth";
 
 type Image = { url: string };
 type Artist = {
@@ -99,9 +100,9 @@ export default function SearchPage() {
             Mis álbumes
           </Link>
           <span className={styles.sep} aria-hidden="true" />
-          <Link className={styles.link} to="/login">
+          <button className={styles.linkBtn} onClick={logout}>
             Cerrar sesión
-          </Link>
+          </button>
         </nav>
       </header>
 

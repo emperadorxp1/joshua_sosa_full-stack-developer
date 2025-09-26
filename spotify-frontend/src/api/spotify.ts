@@ -1,4 +1,3 @@
-// src/api/spotify.ts
 import { getToken, clearAuth } from "../auth/auth";
 
 const BASE = "https://api.spotify.com/v1";
@@ -46,7 +45,6 @@ export type MeSavedAlbumsResponse = {
   next?: string | null;
 };
 
-// Ponle un tipo explícito y genérico al retorno
 async function http<T = unknown>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${BASE}${path}`, {
     ...init,
@@ -66,7 +64,6 @@ async function http<T = unknown>(path: string, init?: RequestInit): Promise<T> {
   if (res.status === 429) {
     const retry = Number(res.headers.get("Retry-After") ?? 2);
     await new Promise((r) => setTimeout(r, retry * 1000));
-    // llamada recursiva conserva el tipo T
     return http<T>(path, init);
   }
 
@@ -77,7 +74,6 @@ async function http<T = unknown>(path: string, init?: RequestInit): Promise<T> {
   return (await res.json()) as T;
 }
 
-// PUT/DELETE con retry y tipo de retorno explícito
 async function putOrDeleteWithRetry(
   path: string,
   method: "PUT" | "DELETE"
