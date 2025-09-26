@@ -1,4 +1,3 @@
-// src/auth/auth.ts
 import { createPkcePair } from "./pkce";
 
 const CLIENT_ID = import.meta.env.VITE_SPOTIFY_CLIENT_ID as string;
