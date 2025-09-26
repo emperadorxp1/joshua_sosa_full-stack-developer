@@ -90,7 +90,7 @@ export default function SearchPage() {
   return (
     <main className={styles.page}>
       <header className={styles.topbar}>
-        <div className={styles.brand}>JOSHUAMUSICAPP</div>
+        <div className={styles.brand}>JOSHMUSICAPP</div>
         <nav className={styles.nav}>
           <Link className={`${styles.link} ${styles.active}`} to="/search">
             Buscar

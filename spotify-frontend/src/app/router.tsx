@@ -3,6 +3,7 @@ import { createBrowserRouter, Outlet } from "react-router-dom";
 import RequireAuth from "./guards/RequireAuth";
 import Login from "../pages/Login/Login";
 import Search from "../pages/Search/Search";
+import Artist from "../pages/Artist/Artist";
 
 function Layout() {
   return (
@@ -23,6 +24,7 @@ export const router = createBrowserRouter([
         children: [
           { path: "/", element: <Search /> },
           { path: "/search", element: <Search /> },
+          { path: "/artist/:id", element: <Artist /> },
         ],
       },
     ],
