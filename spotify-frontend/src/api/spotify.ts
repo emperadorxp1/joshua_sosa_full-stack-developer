@@ -2,8 +2,8 @@
 import { getToken, clearAuth } from "../auth/auth";
 
 const BASE = "https://api.spotify.com/v1";
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-// Tipos mínimos útiles (puedes ampliarlos luego)
 export type Image = { url: string; height: number; width: number };
 export type Artist = {
   id: string;
@@ -77,6 +77,29 @@ async function http<T = unknown>(path: string, init?: RequestInit): Promise<T> {
   return (await res.json()) as T;
 }
 
+// PUT/DELETE con retry y tipo de retorno explícito
+async function putOrDeleteWithRetry(
+  path: string,
+  method: "PUT" | "DELETE"
+): Promise<void> {
+  const res = await fetch(`${BASE}${path}`, {
+    method,
+    headers: {
+      Authorization: `Bearer ${getToken()}`,
+      "Content-Type": "application/json",
+    },
+  });
+  if (res.status === 429) {
+    const retry = Number(res.headers.get("Retry-After") ?? 2);
+    await sleep(retry * 1000);
+    return putOrDeleteWithRetry(path, method); // Promise<void>
+  }
+  if (![200, 201, 204].includes(res.status)) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`${method} ${path} failed: ${res.status} ${text}`);
+  }
+}
+
 export const Spotify = {
   searchArtists: (q: string, limit = 20, offset = 0) =>
     http<SearchArtistsResponse>(
@@ -97,4 +120,15 @@ export const Spotify = {
 
   meSavedAlbums: (limit = 20, offset = 0) =>
     http<MeSavedAlbumsResponse>(`/me/albums?limit=${limit}&offset=${offset}`),
+  meSavedAlbumsContains(idsCsv: string): Promise<boolean[]> {
+    return http<boolean[]>(`/me/albums/contains?ids=${idsCsv}`);
+  },
+
+  // Guardar / Quitar
+  saveAlbums(idsCsv: string): Promise<void> {
+    return putOrDeleteWithRetry(`/me/albums?ids=${idsCsv}`, "PUT");
+  },
+  removeAlbums(idsCsv: string): Promise<void> {
+    return putOrDeleteWithRetry(`/me/albums?ids=${idsCsv}`, "DELETE");
+  },
 };
