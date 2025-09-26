@@ -101,33 +101,6 @@ export default function ArtistPage() {
     }
   }
 
-  async function fetchContains(idsCsv: string): Promise<boolean[]> {
-    const res = await fetch(
-      `https://api.spotify.com/v1/me/albums/contains?ids=${idsCsv}`,
-      {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("sp_access_token")}`,
-        },
-      }
-    );
-    if (!res.ok) return [];
-    return res.json();
-  }
-
-  async function toggleAlbum(albumId: string, shouldSave: boolean) {
-    const endpoint = "https://api.spotify.com/v1/me/albums";
-    const method = shouldSave ? "PUT" : "DELETE";
-    const res = await fetch(`${endpoint}?ids=${albumId}`, {
-      method,
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("sp_access_token")}`,
-      },
-    });
-    if (res.ok) {
-      setSavedMap((prev) => ({ ...prev, [albumId]: shouldSave }));
-    }
-  }
-
   const heroImg =
     artist?.images?.[0]?.url || "https://picsum.photos/seed/artist/400/400";
   const followers = artist?.followers?.total ?? 0;

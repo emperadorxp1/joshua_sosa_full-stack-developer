@@ -19,7 +19,6 @@ const LIMIT = 4;
 
 export default function SearchPage() {
   const [params, setParams] = useSearchParams();
-  const nav = useNavigate();
 
   const qParam = params.get("q") || "Nirvana";
   const pageParam = Math.max(1, Number(params.get("page") || 1));
