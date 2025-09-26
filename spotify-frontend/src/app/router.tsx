@@ -4,11 +4,11 @@ import RequireAuth from "./guards/RequireAuth";
 import Login from "../pages/Login/Login";
 import Search from "../pages/Search/Search";
 import Artist from "../pages/Artist/Artist";
+import SavedAlbums from "../pages/SavedAlbums/SavedAlbums";
 
 function Layout() {
   return (
     <div style={{ minHeight: "100vh" }}>
-      {/* aquí puedes poner un header con botón de logout si quieres */}
       <Outlet />
     </div>
   );
@@ -17,14 +17,15 @@ function Layout() {
 export const router = createBrowserRouter([
   { path: "/login", element: <Login /> },
   {
-    element: <RequireAuth />, // protege lo privado
+    element: <RequireAuth />,
     children: [
       {
-        element: <Layout />, // tu layout (reemplaza al viejo App)
+        element: <Layout />,
         children: [
           { path: "/", element: <Search /> },
           { path: "/search", element: <Search /> },
           { path: "/artist/:id", element: <Artist /> },
+          { path: "/me/albums", element: <SavedAlbums /> },
         ],
       },
     ],

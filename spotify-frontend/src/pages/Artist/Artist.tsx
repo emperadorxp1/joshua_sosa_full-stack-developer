@@ -18,8 +18,6 @@ type Album = {
   release_date?: string;
 };
 
-const PAGE_SIZE = 12;
-
 export default function ArtistPage() {
   const { id = "" } = useParams<{ id: string }>();
   const [artist, setArtist] = useState<Artist | null>(null);
@@ -28,8 +26,12 @@ export default function ArtistPage() {
   const [status, setStatus] = useState<"loading" | "done" | "error">("loading");
   const [err, setErr] = useState("");
   const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [busy, setBusy] = useState<Record<string, boolean>>({});
 
+  const PAGE_SIZE = 12;
   const offset = useMemo(() => (page - 1) * PAGE_SIZE, [page]);
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   useEffect(() => {
     let cancel = false;
@@ -44,28 +46,59 @@ export default function ArtistPage() {
         if (cancel) return;
         setArtist(a);
         setAlbums(al.items ?? []);
-        if ((al.items ?? []).length) {
-          const ids = (al.items ?? []).map((x: Album) => x.id).join(",");
-          const contains = await fetchContains(ids);
-          const m: Record<string, boolean> = {};
-          (al.items ?? []).forEach(
-            (x: Album, i: number) => (m[x.id] = !!contains[i])
+        setTotal(al.total ?? 0);
+
+        const curr = al.items ?? [];
+        if (curr.length) {
+          const contains = await Spotify.meSavedAlbumsContains(
+            curr.map((x) => x.id).join(",")
           );
-          setSavedMap(m);
+          const map: Record<string, boolean> = {};
+          curr.forEach((x, i) => (map[x.id] = !!contains[i]));
+          if (!cancel) setSavedMap(map);
         } else {
           setSavedMap({});
         }
         setStatus("done");
       } catch (e: any) {
-        if (cancel) return;
-        setErr(String(e?.message || e));
-        setStatus("error");
+        if (!cancel) {
+          setErr(String(e?.message || e));
+          setStatus("error");
+        }
       }
     })();
     return () => {
       cancel = true;
     };
   }, [id, offset]);
+
+  async function handleAdd(albumId: string) {
+    if (busy[albumId]) return;
+    setBusy((b) => ({ ...b, [albumId]: true }));
+    setSavedMap((m) => ({ ...m, [albumId]: true })); // optimista
+    try {
+      await Spotify.saveAlbums(albumId);
+    } catch (e) {
+      setSavedMap((m) => ({ ...m, [albumId]: false }));
+      console.error(e);
+    } finally {
+      setBusy((b) => ({ ...b, [albumId]: false }));
+    }
+  }
+
+  async function handleRemove(albumId: string) {
+    if (busy[albumId]) return;
+    setBusy((b) => ({ ...b, [albumId]: true }));
+    setSavedMap((m) => ({ ...m, [albumId]: false })); // optimista
+    try {
+      await Spotify.removeAlbums(albumId);
+    } catch (e) {
+      setSavedMap((m) => ({ ...m, [albumId]: true }));
+      console.error(e);
+    } finally {
+      setBusy((b) => ({ ...b, [albumId]: false }));
+    }
+  }
 
   async function fetchContains(idsCsv: string): Promise<boolean[]> {
     const res = await fetch(
@@ -188,41 +221,105 @@ export default function ArtistPage() {
                   {savedMap[al.id] ? (
                     <button
                       className={`${styles.albumBtn} ${styles.remove}`}
-                      onClick={() => toggleAlbum(al.id, false)}
+                      onClick={() => handleRemove(al.id)}
+                      disabled={!!busy[al.id]}
                     >
-                      − Remove album
+                      {busy[al.id] ? "…" : "− Remove album"}
                     </button>
                   ) : (
                     <button
                       className={`${styles.albumBtn} ${styles.add}`}
-                      onClick={() => toggleAlbum(al.id, true)}
+                      onClick={() => handleAdd(al.id)}
+                      disabled={!!busy[al.id]}
                     >
-                      + Add album
+                      {busy[al.id] ? "…" : "+ Add album"}
                     </button>
                   )}
                 </li>
               ))}
             </ul>
 
-            <div className={styles.pagination}>
-              <button
-                className={styles.pageBtn}
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                disabled={page === 1}
-              >
-                ‹
-              </button>
-              <span className={styles.pageInfo}>Página {page}</span>
-              <button
-                className={styles.pageBtn}
-                onClick={() => setPage((p) => p + 1)}
-              >
-                ›
-              </button>
-            </div>
+            <NumberedPagination
+              page={page}
+              totalPages={totalPages}
+              onPage={(p) => setPage(Math.min(Math.max(1, p), totalPages))}
+            />
           </section>
         </>
       )}
     </main>
+  );
+}
+function NumberedPagination({
+  page,
+  totalPages,
+  onPage,
+}: {
+  page: number;
+  totalPages: number;
+  onPage: (p: number) => void;
+}) {
+  const win = 7;
+  const start = Math.max(1, page - Math.floor(win / 2));
+  const end = Math.min(totalPages, start + win - 1);
+  const pages = Array.from({ length: end - start + 1 }, (_, i) => start + i);
+
+  return (
+    <nav className={styles.pagination} aria-label="Paginación de álbumes">
+      <button
+        className={styles.pageBtn}
+        onClick={() => onPage(page - 1)}
+        disabled={page === 1}
+        aria-label="Anterior"
+      >
+        ‹
+      </button>
+
+      {start > 1 && (
+        <>
+          <button className={styles.pageNum} onClick={() => onPage(1)}>
+            1
+          </button>
+          {start > 2 && (
+            <span className={styles.dots} aria-hidden="true">
+              …
+            </span>
+          )}
+        </>
+      )}
+
+      {pages.map((p) => (
+        <button
+          key={p}
+          className={`${styles.pageNum} ${p === page ? styles.activePage : ""}`}
+          onClick={() => onPage(p)}
+          aria-current={p === page ? "page" : undefined}
+        >
+          {p}
+        </button>
+      ))}
+
+      {end < totalPages && (
+        <>
+          {end < totalPages - 1 && (
+            <span className={styles.dots} aria-hidden="true">
+              …
+            </span>
+          )}
+          <button className={styles.pageNum} onClick={() => onPage(totalPages)}>
+            {totalPages}
+          </button>
+        </>
+      )}
+
+      <button
+        className={styles.pageBtn}
+        onClick={() => onPage(page + 1)}
+        disabled={page === totalPages}
+        aria-label="Siguiente"
+      >
+        ›
+      </button>
+    </nav>
   );
 }
